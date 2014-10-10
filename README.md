@@ -11,8 +11,18 @@ Configuration
 
 Add the plug-in configuration to the XRootD configuration file:
 
-  xrootd.fslib /path/to/libdiamond_ofs.so
+```
+   xrootd.fslib /path/to/libdiamond_ofs.so
+```
 
 Enable adler32 checksumming in the XRootD configuration file:
 
-  xrootd.chksum adler32
+```
+   xrootd.chksum adler32
+```
+
+To enable thirdparty copy (TPC) add this line to the XRootD configuration file:
+
+```
+   ofs.tpc pgm /usr/bin/xrdcp
+```
