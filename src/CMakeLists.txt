@@ -34,7 +34,10 @@ include_directories( ${XROOTD_INCLUDE_DIR} ${XROOTD_INCLUDE_DIR}/private ${Z_INC
 
 add_definitions( -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -DVERSION="${VERSION-MAJOR}.${VERSION_MINOR}.${VERSION_PATH}" )
 
-target_link_libraries( diamond_ofs XrdOfs ${Z_LIBRARIES})
+set(CMAKE_CXX_FLAGS "-O2 -g -Wall -Wno-deprecated-declarations -msse4.2 -std=gnu++0x ")
+
+
+target_link_libraries( diamond_ofs XrdCl ${Z_LIBRARIES})
 
 if( Linux )
   set_target_properties( dimaond_ofs PROPERTIES
