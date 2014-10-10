@@ -31,35 +31,41 @@
 
 struct XrdVersionInfo;
 
-class DiamondFs: public XrdOfs 
-{
+class DiamondFs : public XrdOfs {
 public:
-  
+
   // Object allocation
   //
-  XrdSfsDirectory *newDir(char *user=0, int MonID=0)
-  {return (XrdSfsDirectory *)new DiamondDir(user,MonID);}
-  
-  XrdSfsFile      *newFile(char *user=0,int MonID=0)
-  {return      (XrdSfsFile *)new DiamondFile(user, MonID);}
-  
+
+  XrdSfsDirectory *
+  newDir (char *user = 0, int MonID = 0) {
+    return (XrdSfsDirectory *)new DiamondDir(user, MonID);
+  }
+
+  XrdSfsFile *
+  newFile (char *user = 0, int MonID = 0) {
+    return (XrdSfsFile *)new DiamondFile(user, MonID);
+  }
+
   // Other functions
   //
-  virtual int            chksum(      csFunc            Func,
-				      const char             *csName,
-				      const char             *Path,
-				      XrdOucErrInfo    &out_error,
-				      const XrdSecEntity     *client = 0,
-				      const char             *opaque = 0);
+  virtual int chksum (csFunc Func,
+                      const char *csName,
+                      const char *Path,
+                      XrdOucErrInfo &out_error,
+                      const XrdSecEntity *client = 0,
+                      const char *opaque = 0);
 
-  DiamondFs() { XrdOfs::XrdOfs();}
-  virtual ~DiamondFs();
+  DiamondFs () {
+    XrdOfs::XrdOfs();
+  }
+  virtual ~DiamondFs ();
 
-  virtual int            Configure(XrdSysError &err );
-  virtual int            Configure(XrdSysError &err, XrdOucEnv *env);
-  virtual int   ConfigXeq(char *var, XrdOucStream &str, XrdSysError &err);
+  virtual int Configure (XrdSysError &err);
+  virtual int Configure (XrdSysError &err, XrdOucEnv *env);
+  virtual int ConfigXeq (char *var, XrdOucStream &str, XrdSysError &err);
 
-  const char* getVersion();
-  
+  const char* getVersion ();
+
 };
 #endif

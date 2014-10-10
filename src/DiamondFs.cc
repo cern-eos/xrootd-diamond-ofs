@@ -31,14 +31,14 @@
 XrdOfs *XrdOfsFS = 0;
 
 
-XrdVERSIONINFO(XrdSfsGetFileSystem,"diamondfs" VERSION );
+XrdVERSIONINFO (XrdSfsGetFileSystem, "diamondfs" VERSION);
 
 extern "C"
 XrdSfsFileSystem *
 XrdSfsGetFileSystem (XrdSfsFileSystem *native_fs,
                      XrdSysLogger *lp,
                      const char *configfn,
-		     XrdOucEnv        *EnvInfo)
+                     XrdOucEnv *EnvInfo)
 {
   extern XrdSysError OfsEroute;
   static DiamondFs DiamondFS;
@@ -52,40 +52,40 @@ XrdSfsGetFileSystem (XrdSfsFileSystem *native_fs,
   //
   XrdOfsFS = &DiamondFS;
   XrdOfsFS->ConfigFN = (configfn && *configfn ? strdup(configfn) : 0);
-  if ( XrdOfsFS->Configure(OfsEroute, EnvInfo) ) return 0;
-  
+  if (XrdOfsFS->Configure(OfsEroute, EnvInfo)) return 0;
+
   // All done, we can return the callout vector to these routines.
   //
   return XrdOfsFS;
 }
 
-DiamondFs::~DiamondFs() {}
+DiamondFs::~DiamondFs () { }
 
-int 
-DiamondFs::Configure(XrdSysError &err ) 
-{ 
-  XrdOfs::Configure(err); 
-}
-
-int            
-DiamondFs::Configure(XrdSysError &err, XrdOucEnv *env) 
+int
+DiamondFs::Configure (XrdSysError &err)
 {
-  XrdOfs::Configure(err,env); 
-}
-
-int   
-DiamondFs::ConfigXeq(char *var, XrdOucStream &str, XrdSysError &err) 
-{
-  XrdOfs::ConfigXeq(var,str,err);
+  XrdOfs::Configure(err);
 }
 
 int
-DiamondFs::chksum(csFunc Func,
-		  const char             *csName,
-		  const char             *path,
-		  XrdOucErrInfo          &error,
-		  const XrdSecEntity     *client,
-		  const char             *opaque)
+DiamondFs::Configure (XrdSysError &err, XrdOucEnv *env)
+{
+  XrdOfs::Configure(err, env);
+}
+
+int
+DiamondFs::ConfigXeq (char *var, XrdOucStream &str, XrdSysError &err)
+{
+  XrdOfs::ConfigXeq(var, str, err);
+}
+
+int
+DiamondFs::chksum (csFunc Func,
+                   const char *csName,
+                   const char *path,
+                   XrdOucErrInfo &error,
+                   const XrdSecEntity *client,
+                   const char *opaque)
 {
   static const char *epname = "chksumbla";
   const char *tident = error.getErrUser();
@@ -98,20 +98,25 @@ DiamondFs::chksum(csFunc Func,
 
   rc = 0;
 
-  if (Func == XrdSfsFileSystem::csSize) {
-    if (CheckSumName != "adler32") {
+  if (Func == XrdSfsFileSystem::csSize)
+  {
+    if (CheckSumName != "adler32")
+    {
       strcpy(buff, csName);
       strcat(buff, "checksum - checksum not supported.");
       error.setErrInfo(ENOTSUP, buff);
       return SFS_ERROR;
-    } else {
+    }
+    else
+    {
       // just return the length of an adler checksum
       error.setErrCode(4);
       return SFS_OK;
     }
   }
 
-  if (!path) {
+  if (!path)
+  {
     strcpy(buff, csName);
     strcat(buff, "checksum - checksum path not specified.");
     error.setErrInfo(EINVAL, buff);
@@ -122,8 +127,11 @@ DiamondFs::chksum(csFunc Func,
   // Now determine what to do
   // ---------------------------------------------------------------------------
   if ((Func == XrdSfsFileSystem::csCalc) ||
-      (Func == XrdSfsFileSystem::csGet)) {
-  } else {
+      (Func == XrdSfsFileSystem::csGet))
+  {
+  }
+  else
+  {
     error.setErrInfo(EINVAL, "checksum - invalid checksum function.");
     return SFS_ERROR;
   }
@@ -131,34 +139,44 @@ DiamondFs::chksum(csFunc Func,
   // compute the checksum scrubbing this file
 
   DiamondFile* file = (DiamondFile*) newFile();
-  if (file) {
-    if (file->open(path, 0, 0, client, opaque)) {
+  if (file)
+  {
+    if (file->open(path, 0, 0, client, opaque))
+    {
       error.setErrInfo(EINVAL, "checksum - unable to open file.");
       return SFS_ERROR;
     }
-    char* buffer = (char*)malloc(4*1024*1024);
-    off_t offset = 0 ;
-    size_t chunksize = 4*1024*1024;
+    char* buffer = (char*) malloc(4 * 1024 * 1024);
+    off_t offset = 0;
+    size_t chunksize = 4 * 1024 * 1024;
     size_t nread = 0;
 
-    if (buffer) {
-      do {
-	nread = file->read(offset, buffer, chunksize);
-	if (nread>0) {
-	  adler = adler32(adler, (const Bytef*) buffer, nread);
-	  offset+=nread;
-	}
-      } while (nread == chunksize);
+    if (buffer)
+    {
+      do
+      {
+        nread = file->read(offset, buffer, chunksize);
+        if (nread > 0)
+        {
+          adler = adler32(adler, (const Bytef*) buffer, nread);
+          offset += nread;
+        }
+      }
+      while (nread == chunksize);
       free(buffer);
-    } else {
+    }
+    else
+    {
       error.setErrInfo(EINVAL, "checksum - buffer allocation failed.");
       return SFS_ERROR;
     }
-  } else {
+  }
+  else
+  {
     error.setErrInfo(EINVAL, "checksum - file allocation failed.");
     return SFS_ERROR;
   }
-  snprintf(buff,9, "%08x",adler);
+  snprintf(buff, 9, "%08x", adler);
   error.setErrInfo(0, buff);
   return SFS_OK;
 }

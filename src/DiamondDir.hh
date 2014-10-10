@@ -25,11 +25,11 @@
 #define __DIAMONDDIR_API_H__
 #include "XrdOfs/XrdOfs.hh"
 
-class DiamondDir: public XrdOfsDirectory
-{
+class DiamondDir : public XrdOfsDirectory {
 public:
-  DiamondDir(const char *user, int MonID) :XrdOfsDirectory(user,MonID) {}
 
-  ~DiamondDir() {}
+  DiamondDir (const char *user, int MonID) : XrdOfsDirectory (user, MonID) { }
+
+  ~DiamondDir () { }
 };
 #endif
