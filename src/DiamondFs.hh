@@ -25,17 +25,49 @@
 #ifndef __DIAMONDFS_API_H__
 #define __DIAMONDFS_API_H__
 #include "XrdOfs/XrdOfs.hh"
+#include "XrdSys/XrdSysPthread.hh"
 
 #include "DiamondFile.hh"
 #include "DiamondDir.hh"
 
+#include <map>
+#include <vector>
+#include <string>
+
 struct XrdVersionInfo;
 
 class DiamondFs : public XrdOfs {
+private:
+  //----------------------------------------------------------------------------
+  //! TPC Functionality
+  //----------------------------------------------------------------------------
+
+  struct TpcInfo {
+    std::string path;
+    std::string opaque;
+    std::string capability;
+    std::string key;
+    std::string src;
+    std::string dst;
+    std::string org;
+    std::string lfn;
+    time_t expires;
+  };
+
+protected:
+  friend class DiamondFile;
+
+  XrdSysMutex TpcMapMutex; //< a mutex protecting a Tpc Map
+  typedef std::map<std::string, struct TpcInfo> tpc_info_map_t;
+  typedef std::vector<tpc_info_map_t > tpc_map_t;
+
+  tpc_map_t TpcMap; //< a vector map pointing from tpc key => tpc information for reads, [0] are readers [1] are writers
+
 public:
 
-  // Object allocation
-  //
+  //----------------------------------------------------------------------------
+  //! Object Allocation
+  //----------------------------------------------------------------------------
 
   XrdSfsDirectory *
   newDir (char *user = 0, int MonID = 0) {
@@ -47,8 +79,9 @@ public:
     return (XrdSfsFile *)new DiamondFile(user, MonID);
   }
 
-  // Other functions
-  //
+  //----------------------------------------------------------------------------
+  //! Overloaded Functions
+  //----------------------------------------------------------------------------
   virtual int chksum (csFunc Func,
                       const char *csName,
                       const char *Path,
@@ -58,7 +91,9 @@ public:
 
   DiamondFs () {
     XrdOfs::XrdOfs();
+    TpcMap.resize(2);
   }
+
   virtual ~DiamondFs ();
 
   virtual int Configure (XrdSysError &err);
@@ -68,4 +103,6 @@ public:
   const char* getVersion ();
 
 };
+
+extern DiamondFs DiamondFS;
 #endif

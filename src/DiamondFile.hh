@@ -24,16 +24,68 @@
 #ifndef __DIAMONDFILE_API_H__
 #define __DIAMONDFILE_API_H__
 #include "XrdOfs/XrdOfs.hh"
+#include "XrdOuc/XrdOucString.hh"
 
-class DiamondFile : public XrdOfsFile
-{
+class DiamondFile : public XrdOfsFile {
+private:
+  bool isRW;
+
 public:
-  using          XrdSfsFile::fctl;
-  
-  DiamondFile(const char *user, int MonID) : XrdOfsFile(user,MonID) {}
+  using XrdSfsFile::fctl;
 
-  
-  ~DiamondFile() {}
+  DiamondFile (const char *user, int MonID) : XrdOfsFile (user, MonID),
+  isRW (false) {
+    tpcFlag = kTpcNone;
+    tpcState = kTpcIdle;
+  }
+
+  ~DiamondFile () { }
+
+  //----------------------------------------------------------------------------
+  //! Overloaded Functions
+  //----------------------------------------------------------------------------
+  int open (const char* path,
+            XrdSfsFileOpenMode open_mode,
+            mode_t create_mode,
+            const XrdSecEntity* client,
+            const char* opaque);
+  //----------------------------------------------------------------------------
+  int close ();
+  //----------------------------------------------------------------------------
+  int sync ();
+  //----------------------------------------------------------------------------
+
+  //----------------------------------------------------------------------------
+  //! TPC Functionality
+  //----------------------------------------------------------------------------
+  //! Check if the TpcKey is still valid e.g. member of gOFS.TpcMap
+  //----------------------------------------------------------------------------
+  bool
+  TpcValid ();
+  //----------------------------------------------------------------------------
+  XrdOucString TpcKey; //! TPC key for a tpc file operation
+  //----------------------------------------------------------------------------
+
+  enum {
+    kTpcNone = 0, //! no TPC access
+    kTpcSrcSetup = 1, //! access setting up a source TPC session
+    kTpcDstSetup = 2, //! access setting up a destination TPC session
+    kTpcSrcRead = 3, //! read access from a TPC destination
+    kTpcSrcCanDo = 4, //! read access to evaluate if source available
+  };
+  //----------------------------------------------------------------------------
+  int tpcFlag; //! uses kTpcXYZ enums above to identify TPC access
+  //----------------------------------------------------------------------------
+
+  enum {
+    kTpcIdle = 0, //! TPC is not enabled and not running (no sync received)
+    kTpcEnabled = 1, //! TPC is enabled, but not running (1st sync received)
+    kTpcRun = 2, //! TPC is running (2nd sync received)
+    kTpcDone = 3, //! TPC has finished
+  };
+  //----------------------------------------------------------------------------
+  int tpcState; //! uses kTPCXYZ enumgs above to tag the TPC state
+  //----------------------------------------------------------------------------
 };
 
 #endif

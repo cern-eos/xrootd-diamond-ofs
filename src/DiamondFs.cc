@@ -30,6 +30,8 @@
 
 XrdOfs *XrdOfsFS = 0;
 
+DiamondFs DiamondFS;
+
 
 XrdVERSIONINFO (XrdSfsGetFileSystem, "diamondfs" VERSION);
 
@@ -41,8 +43,6 @@ XrdSfsGetFileSystem (XrdSfsFileSystem *native_fs,
                      XrdOucEnv *EnvInfo)
 {
   extern XrdSysError OfsEroute;
-  static DiamondFs DiamondFS;
-
   // No need to herald this as it's now the default filesystem
   //
   OfsEroute.SetPrefix("diamond_");
@@ -51,6 +51,7 @@ XrdSfsGetFileSystem (XrdSfsFileSystem *native_fs,
   // Initialize the subsystems
   //
   XrdOfsFS = &DiamondFS;
+
   XrdOfsFS->ConfigFN = (configfn && *configfn ? strdup(configfn) : 0);
   if (XrdOfsFS->Configure(OfsEroute, EnvInfo)) return 0;
 
@@ -64,19 +65,19 @@ DiamondFs::~DiamondFs () { }
 int
 DiamondFs::Configure (XrdSysError &err)
 {
-  XrdOfs::Configure(err);
+  return XrdOfs::Configure(err);
 }
 
 int
 DiamondFs::Configure (XrdSysError &err, XrdOucEnv *env)
 {
-  XrdOfs::Configure(err, env);
+  return XrdOfs::Configure(err, env);
 }
 
 int
 DiamondFs::ConfigXeq (char *var, XrdOucStream &str, XrdSysError &err)
 {
-  XrdOfs::ConfigXeq(var, str, err);
+  return XrdOfs::ConfigXeq(var, str, err);
 }
 
 int
@@ -87,8 +88,8 @@ DiamondFs::chksum (csFunc Func,
                    const XrdSecEntity *client,
                    const char *opaque)
 {
-  static const char *epname = "chksumbla";
-  const char *tident = error.getErrUser();
+  //static const char *epname = "chksum";
+  //const char *tident = error.getErrUser();
 
   char buff[MAXPATHLEN + 8];
   int rc;
