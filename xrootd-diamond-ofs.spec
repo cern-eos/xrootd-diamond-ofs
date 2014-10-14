@@ -15,6 +15,16 @@ BuildRequires: xrootd4-server-devel >= 4.0
 BuildRequires: xrootd4-private-devel >= 4.0
 BuildRequires: zlib zlib-devel
 
+%if 0%{?rhel} >= 6 || %{?fedora}%{!?fedora:0}
+%if %{?fedora}%{!?fedora:0} >= 18
+BuildRequires: gcc, gcc-c++
+%else
+BuildRequires: gcc, gcc-c++
+%endif
+%else
+BuildRequires: gcc44, gcc44-c++
+%endif
+
 Requires: xrootd4 >= 4.0 
 Requires: zlib
 
