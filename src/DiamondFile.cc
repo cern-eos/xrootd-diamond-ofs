@@ -567,6 +567,7 @@ DiamondFile::DoTpcTransfer()
     // Check validity of the TPC key
     if (!TpcValid())
     {
+      // terminate
       SetTpcState(kTpcDone);
       diamond_log("msg=\"tpc transfer invalidated during sync\"");
       error.setErrInfo(ECONNABORTED, "sync - TPC session has been closed by disconnect");
