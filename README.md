@@ -26,3 +26,18 @@ To enable thirdparty copy (TPC) add this line to the XRootD configuration file:
 ```
    ofs.tpc pgm /usr/bin/xrdcp
 ```
+
+CGI Support
+===========
+
+The plug-in supports the following CGI tags "?diamond.<key1>=<value1>&diamond.<key2>=<value2>
+```
+   diamond.stripe=<size>
+   <size> can be a plain number (bytes) or e.g. 1k,2K,3M,4m,1G,2g etc ...
+   
+   Example: "root://localhost//myfile?diamond.stripe=64M"
+```
+If the **diamond.stripe** is unspecified the internal default stripe size will be used.
+
+
+

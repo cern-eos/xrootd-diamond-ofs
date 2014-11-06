@@ -102,6 +102,7 @@ public:
 
   const char* getVersion ();
 
+  uint64_t parseUnit(const char* instring);
 };
 
 extern DiamondFs DiamondFS;

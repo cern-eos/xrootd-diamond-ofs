@@ -45,7 +45,6 @@ DiamondFile::open (const char* path,
 {
   EPNAME("open");
   // const char* tident = error.getErrUser();
-
   // ----------------------------------------------------------------------------
   // extract tpc keys
   // ----------------------------------------------------------------------------
@@ -273,6 +272,32 @@ DiamondFile::open (const char* path,
 
   if (DIAMOND_DEBUG)fprintf(stderr, "Opening %s %s %x %x\n", Path.c_str(), stringOpaque.c_str(),
                             open_mode, create_mode);
+
+
+  XrdOucEnv parseOpaque(stringOpaque.c_str());
+  
+  // deal and check stripesize parameters
+  if (parseOpaque.Get("diamond.stripe")) {
+    if (DIAMOND_DEBUG)fprintf(stderr, "msg=\"parsing stripesize\" val=%s\n", parseOpaque.Get("diamond.stripe"));
+
+    unsigned long long stripesize = DiamondFS.parseUnit(parseOpaque.Get("diamond.stripe"));
+    if (errno) {
+      return DiamondFS.Emsg(epname,
+			    error,
+			    EINVAL,
+			    "open - illegal stripesize parameters",
+			    path);      
+    }
+    stringOpaque.replace("rfs.stripe=","illegal=");
+    std::stringstream sstream;
+    sstream << "rfs.stripe=" << stripesize;
+    if (!stringOpaque.endswith("&")) {
+      stringOpaque+= "&";
+    }
+    stringOpaque += sstream.str().c_str();
+    if (DIAMOND_DEBUG)fprintf(stderr, "msg=\"modifying opaque\" val=%s\n", stringOpaque.c_str());
+  }
+  
   return XrdOfsFile::open(Path.c_str(),
                           open_mode,
                           create_mode,
@@ -456,7 +481,7 @@ DiamondFile::sync ()
         // Write the buffer out through the local object
         //.......................................................................
         wbytes = DiamondFile::write(offset, &((*buffer)[0]), rbytes);
-        if (DIAMOND_DEBUG)fprintf(stderr, "msg=\"tpc write\" offset=%llu rbytes=%u wbytes=%u\n", offset, rbytes, wbytes);
+        if (DIAMOND_DEBUG)fprintf(stderr, "msg=\"tpc write\" offset=%llu rbytes=%u wbytes=%u\n", (unsigned long long)offset, rbytes, wbytes);
         if (rbytes != wbytes)
         {
           tpcState = kTpcDone;
@@ -500,3 +525,4 @@ DiamondFile::sync ()
     return XrdOfsFile::sync();
   }
 }
+

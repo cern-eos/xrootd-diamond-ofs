@@ -191,3 +191,105 @@ DiamondFs::getVersion ()
   FullVersion += VERSION;
   return FullVersion.c_str();
 }
+
+uint64_t 
+DiamondFs::parseUnit(const char* instring)
+{
+  if (!instring)
+  {
+    errno = EINVAL;
+    return 0;
+  }
+  
+  XrdOucString sizestring = instring;
+  errno = 0;
+  unsigned long long convfactor;
+  convfactor = 1ll;
+  if (!sizestring.length())
+  {
+      errno = EINVAL;
+      return 0;
+  }
+
+  if (sizestring.endswith("B") || sizestring.endswith("b"))
+  {
+    sizestring.erase(sizestring.length() - 1);
+  }
+  
+  if (sizestring.endswith("E") || sizestring.endswith("e"))
+  {
+    convfactor = 1024ll * 1024ll * 1024ll * 1024ll * 1024ll * 1024ll;
+  }
+
+  if (sizestring.endswith("P") || sizestring.endswith("p"))
+  {
+    convfactor = 1024ll * 1024ll * 1024ll * 1024ll * 1024ll;
+  }
+
+  if (sizestring.endswith("T") || sizestring.endswith("t"))
+  {
+    convfactor = 1024ll * 1024ll * 1024ll * 1024ll;
+  }
+
+  if (sizestring.endswith("G") || sizestring.endswith("g"))
+  {
+    convfactor = 1024ll * 1024ll * 1024ll;
+  }
+
+  if (sizestring.endswith("M") || sizestring.endswith("m"))
+  {
+    convfactor = 1024ll * 1024ll;
+  }
+
+  if (sizestring.endswith("K") || sizestring.endswith("k"))
+  {
+    convfactor = 1024ll;
+  }
+
+  if (sizestring.endswith("S") || sizestring.endswith("s"))
+  {
+    convfactor = 1ll;
+  }
+
+  if ((sizestring.length() > 3) && (sizestring.endswith("MIN") || sizestring.endswith("min")))
+  {
+    convfactor = 60ll;
+  }
+
+  if (sizestring.endswith("H") || sizestring.endswith("h"))
+  {
+    convfactor = 3600ll;
+  }
+
+  if (sizestring.endswith("D") || sizestring.endswith("d"))
+  {
+    convfactor = 86400ll;
+  }
+  
+  if (sizestring.endswith("W") || sizestring.endswith("w"))
+  {
+    convfactor = 7 * 86400ll;
+  }
+  
+  if ((sizestring.length() > 2) && (sizestring.endswith("MO") || sizestring.endswith("mo")))
+  {
+    convfactor = 31 * 86400ll;
+  }
+  
+  if (sizestring.endswith("Y") || sizestring.endswith("y"))
+  {
+    convfactor = 365 * 86400ll;
+  }
+
+  if (convfactor > 1)
+    sizestring.erase(sizestring.length() - 1);
+  
+  if ((sizestring.find(".")) != STR_NPOS)
+  {
+    return ((unsigned long long) (strtod(sizestring.c_str(), NULL) * convfactor));
+  }
+  else
+  {
+    return (strtoll(sizestring.c_str(), 0, 10) * convfactor);
+  }
+}
