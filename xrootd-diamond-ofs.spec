@@ -1,7 +1,7 @@
 %define _unpackaged_files_terminate_build 0
 Name:		xrootd-diamond-ofs
 Version:	0.1.1
-Release:	1
+Release:	2
 Summary:	EOS Diamond XRootD OFS plugin 
 Prefix:         /usr
 Group:		Applications/File
@@ -13,6 +13,7 @@ BuildRoot:     %{_tmppath}/%{name}-root
 BuildRequires: cmake >= 2.6
 BuildRequires: xrootd4-server-devel >= 4.0
 BuildRequires: xrootd4-private-devel >= 4.0
+BuildRequires: xrootd4-client-devel >= 4.0
 BuildRequires: zlib zlib-devel
 
 %if 0%{?rhel} >= 6 || %{?fedora}%{!?fedora:0}
@@ -26,6 +27,8 @@ BuildRequires: gcc44, gcc44-c++
 %endif
 
 Requires: xrootd4 >= 4.0 
+Requires: xrootd4-client-libs >= 4.0
+Requires: xrootd4-client >= 4.0
 Requires: zlib
 
 
