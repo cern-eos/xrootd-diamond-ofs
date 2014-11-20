@@ -24,6 +24,7 @@
 
 #ifndef __DIAMONDFS_API_H__
 #define __DIAMONDFS_API_H__
+#include "XrdOuc/XrdOucTrace.hh"
 #include "XrdOfs/XrdOfs.hh"
 #include "XrdSys/XrdSysPthread.hh"
 
@@ -35,6 +36,12 @@
 #include <string>
 
 struct XrdVersionInfo;
+
+extern XrdOucTrace      OfsTrace;
+
+#define diamond_log(...)   TRACES(diamond_ofs_log(__FUNCTION__, __FILE__, __LINE__,  __VA_ARGS__).c_str())
+
+std::string diamond_ofs_log (const char* func, const char* file, int line, const char* msg, ...);
 
 class DiamondFs : public XrdOfs {
 private:

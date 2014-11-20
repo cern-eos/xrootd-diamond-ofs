@@ -26,11 +26,32 @@
 #include "XrdSys/XrdSysLogger.hh"
 #include "XrdVersion.hh"
 #include "XrdOuc/XrdOucString.hh"
+#include "XrdOuc/XrdOucTrace.hh"
+#include "XrdOfs/XrdOfsTrace.hh"
 #include <zlib.h>
+
+#include <sstream>
 
 XrdOfs *XrdOfsFS = 0;
 
 DiamondFs DiamondFS;
+
+std::string diamond_ofs_log (const char* func, const char* file, int line, const char* msg, ...) 
+{
+  static XrdSysMutex lMutex;
+  static char buffer[1024*1024];
+  XrdSysMutexHelper lLock(lMutex);
+
+  va_list args;
+  va_start(args, msg);
+  vsnprintf(buffer, 1024*1024, msg, args);
+
+  std::stringstream s;
+  std::string ffile = file;
+  ffile.erase(0, ffile.rfind("/")+1);
+  s << "[ " << ffile << ":" << line << " ] " << buffer;
+  return s.str().c_str();
+}
 
 
 XrdVERSIONINFO (XrdSfsGetFileSystem, "diamondfs" VERSION);
@@ -88,8 +109,10 @@ DiamondFs::chksum (csFunc Func,
                    const XrdSecEntity *client,
                    const char *opaque)
 {
-  //static const char *epname = "chksum";
-  //const char *tident = error.getErrUser();
+  EPNAME("cksum");
+  const char* tident = error.getErrUser();
+
+  diamond_log("name=%s path=\"%s\"", csName, path);
 
   char buff[MAXPATHLEN + 8];
   int rc;

@@ -25,21 +25,35 @@
 #define __DIAMONDFILE_API_H__
 #include "XrdOfs/XrdOfs.hh"
 #include "XrdOuc/XrdOucString.hh"
+#include "XrdSec/XrdSecEntity.hh"
+
+// WARNING: local include copied out of XRootD source tree
+#include "XrdOfsTPCInfo.hh"
 
 class DiamondFile : public XrdOfsFile {
 private:
   bool isRW;
+  bool isOpen;
+  bool viaDelete;
+  bool isTruncate;
+
+  XrdSecEntity client_sec;
 
 public:
   using XrdSfsFile::fctl;
 
   DiamondFile (const char *user, int MonID) : XrdOfsFile (user, MonID),
-  isRW (false) {
+					      isRW (false),
+					      isOpen (false),
+					      viaDelete (false),
+					      isTruncate (false),
+					      mTpcThreadStatus(EINVAL)
+  {
     tpcFlag = kTpcNone;
-    tpcState = kTpcIdle;
+    mTpcState = kTpcIdle;
   }
 
-  ~DiamondFile () { }
+  ~DiamondFile () { viaDelete=true; close(); }
 
   //----------------------------------------------------------------------------
   //! Overloaded Functions
@@ -77,14 +91,54 @@ public:
   int tpcFlag; //! uses kTpcXYZ enums above to identify TPC access
   //----------------------------------------------------------------------------
 
-  enum {
+  enum TpcState_t {
     kTpcIdle = 0, //! TPC is not enabled and not running (no sync received)
     kTpcEnabled = 1, //! TPC is enabled, but not running (1st sync received)
     kTpcRun = 2, //! TPC is running (2nd sync received)
     kTpcDone = 3, //! TPC has finished
   };
+
+  
+private:
+  
   //----------------------------------------------------------------------------
-  int tpcState; //! uses kTPCXYZ enumgs above to tag the TPC state
+  //! Static method used to start an asynchronous thread which is doing the
+  //! TPC transfer
+  //!
+  //! @param arg XrdFstOfsFile instance object
+  //!
+  //----------------------------------------------------------------------------
+  static void* StartDoTpcTransfer (void* arg);
+  
+  
+  //----------------------------------------------------------------------------
+  //! Do TPC transfer
+  //----------------------------------------------------------------------------
+  void* DoTpcTransfer();
+
+
+  //----------------------------------------------------------------------------
+  //! Set the TPC state
+  //!
+  //! @param state TPC state
+  //!
+  //----------------------------------------------------------------------------
+  void SetTpcState(TpcState_t state);
+  
+  
+  //----------------------------------------------------------------------------
+  //! Get the TPC state of the transfer
+  //!
+  //! @return TPC state
+  //----------------------------------------------------------------------------
+  TpcState_t GetTpcState();
+
+  int mTpcThreadStatus; ///< status of the TPC thread - 0 valid otherwise error
+  TpcState_t mTpcState; //< uses kTPCXYZ enumgs above to tag the TPC state
+  pthread_t mTpcThread; //< thread ID of a tpc thread
+  XrdSysMutex mTpcStateMutex; ///< mutex protecting the access to TPC state
+  XrdOfsTPCInfo mTpcInfo; ///< TPC info object used for callback
+  
   //----------------------------------------------------------------------------
 };
 
