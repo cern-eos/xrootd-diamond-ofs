@@ -54,11 +54,11 @@ std::string diamond_ofs_log (const char* func, const char* file, int line, const
 }
 
 
-XrdVERSIONINFO (XrdSfsGetFileSystem, "diamondfs" VERSION);
+XrdVERSIONINFO (XrdSfsGetFileSystem2, "diamondfs" VERSION);
 
 extern "C"
 XrdSfsFileSystem *
-XrdSfsGetFileSystem (XrdSfsFileSystem *native_fs,
+XrdSfsGetFileSystem2 (XrdSfsFileSystem *native_fs,
                      XrdSysLogger *lp,
                      const char *configfn,
                      XrdOucEnv *EnvInfo)
