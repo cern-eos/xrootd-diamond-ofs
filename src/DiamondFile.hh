@@ -30,6 +30,8 @@
 // WARNING: local include copied out of XRootD source tree
 #include "XrdOfsTPCInfo.hh"
 
+#define DIAMOND_DEFAULT_TPC_BLOCKSIZE 2*1024*1024
+
 class DiamondFile : public XrdOfsFile {
 private:
   bool isRW;
@@ -47,7 +49,8 @@ public:
 					      isOpen (false),
 					      viaDelete (false),
 					      isTruncate (false),
-					      mTpcThreadStatus(EINVAL)
+					      mTpcThreadStatus(EINVAL),
+					      mTpcBlockSize(DIAMOND_DEFAULT_TPC_BLOCKSIZE)
   {
     tpcFlag = kTpcNone;
     mTpcState = kTpcIdle;
@@ -138,7 +141,8 @@ private:
   pthread_t mTpcThread; //< thread ID of a tpc thread
   XrdSysMutex mTpcStateMutex; ///< mutex protecting the access to TPC state
   XrdOfsTPCInfo mTpcInfo; ///< TPC info object used for callback
-  
+
+  size_t mTpcBlockSize; //< client provided block size for a tpc transfer
   //----------------------------------------------------------------------------
 };
 

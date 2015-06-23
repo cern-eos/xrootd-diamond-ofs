@@ -301,6 +301,13 @@ DiamondFile::open (const char* path,
     if (DIAMOND_DEBUG)diamond_log( "msg=\"modifying opaque\" val=%s", stringOpaque.c_str());
   }
 
+  if (parseOpaque.Get("diamond.tpc.blocksize")) {
+    mTpcBlockSize = DiamondFS.parseUnit(parseOpaque.Get("diamond.tpc.blocksize"));
+    if (mTpcBlockSize < DIAMOND_DEFAULT_TPC_BLOCKSIZE)
+      mTpcBlockSize = DIAMOND_DEFAULT_TPC_BLOCKSIZE;
+    if (DIAMOND_DEBUG)diamond_log( "msg=\"setting tpc block size\" block-size=%llu", mTpcBlockSize);
+  }
+
   if ( (open_mode & SFS_O_TRUNC) || 
        (open_mode & SFS_O_CREAT) )
     isTruncate = true;
@@ -455,7 +462,6 @@ DiamondFile::DoTpcTransfer()
   diamond_log("msg=\"tpc now running - 2nd sync\"");
   std::string src_url = "";
   std::string src_cgi = "";
-  const size_t kDefaultBlocksize = 2 * 1024 * 1024;
   
   // The sync initiates the third party copy
   if (!TpcValid())
@@ -526,18 +532,18 @@ DiamondFile::DoTpcTransfer()
   uint64_t wbytes = 0;
   off_t offset = 0;
   auto_ptr < std::vector<char> > buffer(
-					new std::vector<char>(kDefaultBlocksize));
+					new std::vector<char>(mTpcBlockSize));
   if (DIAMOND_DEBUG)diamond_log("msg=\"tpc pull\"");
   
   do
   {
     // Read the remote file in chunks and check after each chunk if the TPC
     // has been aborted already
-    status = tpcIO.Read(offset, kDefaultBlocksize, &((*buffer)[0]), rbytes, 30);
+    status = tpcIO.Read(offset, mTpcBlockSize, &((*buffer)[0]), rbytes, 30);
 
     if (DIAMOND_DEBUG)diamond_log( "msg=\"tpc read\" rbytes=%u request=%lu",
 			      rbytes,
-			      kDefaultBlocksize);
+			      mTpcBlockSize);
     if (!status.IsOK())
     {
       SetTpcState(kTpcDone);

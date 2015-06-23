@@ -39,5 +39,10 @@ The plug-in supports the following CGI tags "?diamond.<key1>=<value1>&diamond.<k
 ```
 If the **diamond.stripe** is unspecified the internal default stripe size will be used.
 
+For third party transfers the transfer block size can be specified to reduce latency:
+```
+   diamond.tpc.blocksize=<size>
+   <size> can be a plain number (bytes) or e.g. 1k,2K,3M,4m,1G,2g etc ...
+```
 
 
