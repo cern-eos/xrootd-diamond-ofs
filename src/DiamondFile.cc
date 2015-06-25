@@ -312,6 +312,15 @@ DiamondFile::open (const char* path,
        (open_mode & SFS_O_CREAT) )
     isTruncate = true;
 
+  if ( ( Path.beginswith("/root:") ) ||
+       ( Path.beginswith("/xroot:") ) )
+  {
+    // don't forward tpc keys
+    XrdOucString noTpcOpaque = stringOpaque;
+    while (noTpcOpaque.replace("&tpc.","&no3cp.")) {}
+    stringOpaque = noTpcOpaque;
+  }
+
   int rc = XrdOfsFile::open(Path.c_str(),
 			    open_mode,
 			    create_mode,
@@ -539,6 +548,7 @@ DiamondFile::DoTpcTransfer()
   {
     // Read the remote file in chunks and check after each chunk if the TPC
     // has been aborted already
+    rbytes = 0;
     status = tpcIO.Read(offset, mTpcBlockSize, &((*buffer)[0]), rbytes, 30);
 
     if (DIAMOND_DEBUG)diamond_log( "msg=\"tpc read\" rbytes=%u request=%lu",
@@ -547,7 +557,7 @@ DiamondFile::DoTpcTransfer()
     if (!status.IsOK())
     {
       SetTpcState(kTpcDone);
-      diamond_log("msg=\"tpc transfer terminated - remote read failed\"");
+      diamond_log("msg=\"tpc transfer terminated - remote read failed\" rbytes=%lu msg=\"%s\"", rbytes, status.ToString().c_str());
       error.setErrInfo(EIO, "sync - TPC remote read failed");
       mTpcInfo.Reply(SFS_ERROR, EIO, "TPC remote read failed");
       return 0;
