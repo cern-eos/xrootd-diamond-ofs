@@ -1,6 +1,6 @@
 %define _unpackaged_files_terminate_build 0
 Name:		xrootd-diamond-ofs
-Version:	0.1.6
+Version:	0.1.7
 Release:	1
 Summary:	EOS Diamond XRootD OFS plugin 
 Prefix:         /usr
