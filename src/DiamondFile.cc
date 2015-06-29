@@ -189,9 +189,11 @@ DiamondFile::open (const char* path,
 
       for (size_t i = 0; i < 150; i++)
       {
-        XrdSysMutexHelper tpcLock(DiamondFS.TpcMapMutex);
-        if (DiamondFS.TpcMap[isRW].count(tpc_key))
-          exists = true;
+	{
+	  XrdSysMutexHelper tpcLock(DiamondFS.TpcMapMutex);
+	  if (DiamondFS.TpcMap[isRW].count(tpc_key))
+	    exists = true;
+	}
         if (!exists)
         {
           XrdSysTimer timer;
